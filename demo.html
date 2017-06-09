@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>贪食蛇</title>
+	<style type="text/css">
+		body{
+		;
+		background-color:#F5F5F5;
+		}
+		table {
+		background-color:white;
+                border-left: 1px solid #ccc;
+                border-top: 1px solid #ccc;
+		margin:20px auto 0;
+		 -moz-box-shadow: 3px 3px 10px #ccc;
+    -webkit-box-shadow: 3px 3px 10px #ccc;
+    box-shadow: 3px 3px 10px #ccc;
+    /* For IE 8 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=10, Direction=135, Color='#ccc')";
+    /* For IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.Shadow(Strength=10, Direction=135, Color='#ccc');
+            }   
+        td {
+                border-bottom: 1px solid #ccc;
+                border-right: 1px solid #ccc;
+                width: 15px;
+                height: 15px;
+            }
+	</style>
+	<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+    
+</head>
+
+<body>
+	<h4 style="margin:50px auto;text-align:center">请按上下左右方向键开始，按空格键暂停和继续</h4>
+	
+	<span id="kptime"></span>
+	<script type="text/javascript">
+	var size = 20;//格子的行数和列数
+        	var snake = new Array();//蛇数组
+    function createSnake(){
+                var x = parseInt(Math.random() * (size-2));//右边留出来两个格子
+                var y = parseInt(Math.random() * size);
+                snake[0] = new Array(x, y);//蛇数组的第一个格子
+                $("#x" + x + "y" + y).attr("type", "snake");
+                $("#x" + x + "y" + y).css("background-color", "green");
+		 $("#x" + x + "y" + y).innerText="head";
+	      for(var i = 1;i<=2;i++){
+		x++;
+		snake[i]=new Array(x,y);//蛇数组的第二个和第三个格子
+		$("#x" + x + "y" + y).attr("type", "snake");
+                	$("#x" + x + "y" + y).css("background-color", "green");
+			}
+        }
+		
+	var food = new Array();
+	function createFood(){
+                var x = parseInt(Math.random() * size);
+                var y = parseInt(Math.random() * size);
+                while ($("#x" + x + "y" + y).attr("type") == "snake") {//食物出现在了蛇身上 则重新随机
+                    x = parseInt(Math.random() * size);
+	    y = parseInt(Math.random() * size);
+                }
+	food = new Array(x, y);
+                $("#x" + x + "y" + y).attr("type", "food");
+                $("#x" + x + "y" + y).css("background-color", "red");
+            }
+		
+		var isLive = false;//表示蛇是否活着
+		var row = 0;//行的移动
+		var column=0;//列的移动
+		function die(){//死了
+			isLive=false;
+			window.alert("游戏结束!!!游戏运行了"+normal/5+"秒");
+			window.location.reload();
+		}
+		var normal = 0;
+		
+		function move(){
+			normal++;
+				 
+			//蛇的移动方法
+			if(!isLive){
+				return;//已经死了	
+			}
+			var x = snake[0][0] + row;//加给行
+            			   var y = snake[0][1] + column;//加给列
+            			snake.unshift(new Array(x,y));//将x和y的位置作为新的蛇头，插入数组的最前面
+			var type=$("#x"+x+"y"+y).attr("type");
+			if(type=="snake"){//如果蛇头前方的格子是蛇
+				die();//死了
+			}else if(type=="food"){//蛇头前方的格子是食物
+				$("#x"+x+"y"+y).attr("type","snake");//该位置变成蛇的头
+				$("#x"+x+"y"+y).css("background-color","green");
+				createFood();//重新随机一个食物
+			}else if(type=="map"){//蛇头前方的格子是普通的白色格子
+				var tmp=snake.pop();//删掉蛇数组的最后一个格子
+				$("#x"+tmp[0]+"y"+tmp[1]).attr("type","map");//将原来蛇尾巴的位置变成普通的白色格子
+				$("#x"+tmp[0]+"y"+tmp[1]).css("background-color","#fff");
+				$("#x"+x+"y"+y).attr("type","snake");//将原来蛇头前方的格子变成新的蛇头
+				$("#x"+x+"y"+y).css("background-color","green");
+			}else{//蛇头前方的格子既不是蛇也不是普通的白格子，也不是食物，那肯定是到表格的边框了
+				die();//死了
+			}
+		}
+		
+		var direction='';//增加一个变量表示方向
+		var timer=0;//用于暂停
+		
+		$(function (){
+			createSnake();//随机出一个三个格子的横躺着的蛇
+			createFood();//随机出一个格子的食物
+			
+			$(document).keydown(function(e){//有键按下
+				
+				 	var key = e.keyCode;
+                    switch (key) {
+						case 32:
+							//空格键（控制暂停和继续）
+							if(timer!=0){
+								window.clearInterval(timer);
+								timer=0;
+							}else{
+								if(isLive){
+									timer = window.setInterval("move()",200);
+								}
+							}
+							return;
+                        case 37://左
+							if(direction=='right'){
+								return;//往反方向走则没有效果
+							}
+                            row = -1;
+                            column = 0;
+							direction='left'
+                            break;
+                        case 38://下
+							if(direction=='up'){
+								return;//往反方向走则没有效果
+							}
+                            row = 0;
+                            column = -1;
+							direction='down'
+                            break;
+                        case 39://右
+							if(direction=='left'){
+								return;//往反方向走则没有效果
+							}
+                            row = 1;
+                            column = 0;
+							direction='right'
+                            break;
+                        case 40://上
+							if(direction=='down'){
+								return;//往反方向走则没有效果
+							}
+                            row = 0;
+                            column = 1;
+							direction='up'
+                            break;
+                        default:
+                            return;
+						}
+                    if(!isLive){
+						isLive=true;
+						if(row==1&&column==0){
+							//最开始就往右侧移动，因为蛇头默认是最左边的一个格子，则给蛇头调换到最右侧
+							//否则最开始不能往右移动
+							snake.reverse();
+						}
+						timer = window.setInterval("move()",200);
+					}
+			});
+		});
+	</script>
+	<script type="text/javascript">
+			//生成格子
+		document.writeln("<table  cellspacing='0' align='center'>");
+		for(var i = 0;i<size;i++){
+			document.writeln("<tr>");
+			for(var j = 0;j<size;j++){
+				document.writeln("<td id='x"+j+"y"+i+"' type='map'></td>");
+			}
+			document.writeln("</tr>");	
+		}	
+		document.writeln("</table>");	
+	</script>
+</body>
+</html>
